@@ -117,6 +117,7 @@ class OrderController {
 	 * 
 	 * @param cart will never be {@literal null}.
 	 * @param userAccount will never be {@literal null}.
+	 * @param model
 	 * @return
 	 */
 	@PostMapping("/checkout")
