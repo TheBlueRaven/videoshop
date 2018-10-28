@@ -72,8 +72,13 @@
             </div>
         </div>
     </div>
-
     <h2 th:if="${cart.empty}" th:text="#{cart.empty}">Leer</h2>
+    <div th:if="${orderCompletionFailure != null}">
+        <h2 th:if="#{cart.outOfStock}" th:text="#{cart.outOfStock}">Nicht da</h2>
+        <ul>
+            <li th:each="item : ${orderCompletionFailure}" th:text="${item}">10x Last Action Hero</li>
+        </ul>
+    </div>
 </div>
 
 </body>

@@ -15,16 +15,13 @@
  */
 package videoshop.order;
 
+import org.salespointframework.order.*;
 import videoshop.catalog.Disc;
 
-import java.util.Optional;
+import java.util.*;
 
 import org.salespointframework.catalog.Product;
 import org.salespointframework.core.AbstractEntity;
-import org.salespointframework.order.Cart;
-import org.salespointframework.order.Order;
-import org.salespointframework.order.OrderManager;
-import org.salespointframework.order.OrderStatus;
 import org.salespointframework.payment.Cash;
 import org.salespointframework.quantity.Quantity;
 import org.salespointframework.useraccount.UserAccount;
@@ -83,8 +80,7 @@ class OrderController {
 	 * 
 	 * @param disc
 	 * @param number
-	 * @param session
-	 * @param modelMap
+	 * @param cart
 	 * @return
 	 */
 	@PostMapping("/cart")
@@ -124,7 +120,7 @@ class OrderController {
 	 * @return
 	 */
 	@PostMapping("/checkout")
-	String buy(@ModelAttribute Cart cart, @LoggedIn Optional<UserAccount> userAccount) {
+	String buy(@ModelAttribute Cart cart, @LoggedIn Optional<UserAccount> userAccount, Model model) {
 
 		return userAccount.map(account -> {
 
@@ -136,7 +132,21 @@ class OrderController {
 			cart.addItemsTo(order);
 
 			orderManager.payOrder(order);
-			orderManager.completeOrder(order);
+			
+			try {
+				orderManager.completeOrder(order);
+			}
+			catch (OrderCompletionFailure orderCompletionFailure) {
+				TreeSet<String> failures = new TreeSet<>();
+				orderCompletionFailure.getReport().forEach(orderLineCompletion -> {
+					if (orderLineCompletion.isFailure()) {
+						failures.add(orderLineCompletion.getOrderLine().getQuantity() + "x " +orderLineCompletion.getOrderLine().getProductName());
+					}
+				});
+				model.addAttribute("orderCompletionFailure", failures);
+				
+				return "cart";
+			}
 
 			cart.clear();
 
